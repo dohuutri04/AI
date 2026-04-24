@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block title %}Lịch sử ứng tuyển giảng viên{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:980px;">
+    <h1>Lịch sử ứng tuyển giảng viên</h1>
+    <p style="color:#64748b;margin-bottom:18px;">
+      Theo dõi trạng thái hồ sơ đã nộp: đang chờ duyệt, được duyệt hoặc bị từ chối.
+    </p>
+
+    {% if applications %}
+    <div style="display:grid;gap:12px;">
+      {% for a in applications %}
+      <article class="form-card">
+        <h3 style="margin-bottom:6px;">{{ a.job_title }} - {{ a.course_title }}</h3>
+        <p style="margin-bottom:8px;">
+          Người duyệt: {{ a.owner_name }} |
+          Trạng thái:
+          <strong>
+            {% if a.status == 'accepted' %}Đã duyệt
+            {% elif a.status == 'rejected' %}Đã từ chối
+            {% elif a.status == 'shortlisted' %}Đã vào shortlist
+            {% else %}Đang chờ duyệt{% endif %}
+          </strong>
+        </p>
+        <p style="margin:0 0 8px;"><strong>Ngày nộp:</strong> {{ a.created_at }}</p>
+        <p style="margin:0 0 8px;"><strong>Email liên hệ:</strong> {{ a.contact_email }}{% if a.contact_phone %} | <strong>SĐT:</strong> {{ a.contact_phone }}{% endif %}</p>
+        {% if a.review_note %}
+        <p style="margin:0 0 8px;"><strong>Ghi chú từ nhà tuyển dụng:</strong> {{ a.review_note }}</p>
+        {% endif %}
+        {% if a.reviewed_at %}
+        <p style="margin:0 0 8px;"><strong>Thời điểm cập nhật:</strong> {{ a.reviewed_at }}</p>
+        {% endif %}
+
+        {% if a.attachments %}
+        <div style="margin-top:8px;">
+          <strong>File đã nộp:</strong>
+          <ul style="margin:6px 0 0 18px;">
+            {% for f in a.attachments %}
+            <li><a href="{{ f.public_url }}" target="_blank" rel="noopener">{{ f.file_type }} - xem file</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="form-card">
+      <p>Bạn chưa có hồ sơ ứng tuyển giảng viên nào.</p>
+      <a class="btn-primary-sm" href="{{ url_for('teacher_jobs_board') }}">Xem bảng tuyển giáo viên</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

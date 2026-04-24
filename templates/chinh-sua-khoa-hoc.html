@@ -1,0 +1,469 @@
+{% extends "layout.html" %}
+{% block title %}Chỉnh Sửa Khóa Học: {{ course.title }} – EduConnect{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tai-khoan-cua-toi.css') }}">
+<style>
+.editor-page { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
+.editor-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--neutral-500); margin-bottom: 24px; }
+.editor-breadcrumb a { color: var(--brand-600); text-decoration: none; }
+.editor-breadcrumb a:hover { text-decoration: underline; }
+.editor-breadcrumb span { color: var(--neutral-400); }
+.editor-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.editor-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--neutral-900); margin: 0; }
+.editor-header .header-actions { display: flex; gap: 10px; }
+.editor-section { background: var(--white); border: 1px solid var(--neutral-200); border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.editor-section-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--neutral-100); background: var(--neutral-50); cursor: pointer; user-select: none; }
+.editor-section-header h3 { font-size: 1rem; font-weight: 700; color: var(--neutral-800); margin: 0; display: flex; align-items: center; gap: 8px; }
+.section-toggle-icon { font-size: 0.8rem; color: var(--neutral-400); transition: transform 0.2s; }
+.editor-section.collapsed .section-toggle-icon { transform: rotate(-90deg); }
+.editor-section-body { padding: 24px; }
+.editor-section.collapsed .editor-section-body { display: none; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--neutral-700); margin-bottom: 6px; }
+.form-group input[type=text], .form-group input[type=number], .form-group input[type=url], .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--neutral-200); border-radius: 10px; font-size: 0.9rem; font-family: inherit; color: var(--neutral-800); background: var(--white); transition: border-color 0.2s; box-sizing: border-box; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--brand-400); outline: none; box-shadow: 0 0 0 3px var(--brand-100); }
+.form-group textarea { resize: vertical; min-height: 90px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.lesson-list { display: flex; flex-direction: column; gap: 10px; }
+.lesson-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1.5px solid var(--neutral-200); border-radius: 12px; background: var(--white); transition: border-color 0.2s, box-shadow 0.2s; }
+.lesson-item:hover { border-color: var(--brand-300); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.lesson-order { font-size: 0.78rem; font-weight: 700; background: var(--brand-100); color: var(--brand-700); padding: 3px 9px; border-radius: 20px; flex-shrink: 0; min-width: 36px; text-align: center; }
+.lesson-info { flex: 1; min-width: 0; }
+.lesson-title { font-size: 0.9rem; font-weight: 600; color: var(--neutral-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lesson-meta { font-size: 0.76rem; color: var(--neutral-400); margin-top: 2px; }
+.lesson-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.course-file-list { display: flex; flex-direction: column; gap: 10px; }
+.course-file-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--neutral-200); border-radius: 12px; background: var(--white); }
+.course-file-main { min-width: 0; flex: 1; }
+.course-file-title { font-size: .9rem; font-weight: 600; color: var(--neutral-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-file-name { font-size: .78rem; color: var(--neutral-500); margin-top: 2px; }
+.course-file-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.add-lesson-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 2px dashed var(--neutral-300); border-radius: 12px; background: transparent; color: var(--neutral-500); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; margin-top: 12px; }
+.add-lesson-btn:hover { border-color: var(--brand-400); color: var(--brand-600); background: var(--brand-50); }
+.add-lesson-form { border: 1.5px solid var(--brand-200); border-radius: 12px; padding: 16px; margin-top: 12px; background: var(--brand-50); display: none; }
+.add-lesson-form.open { display: block; }
+.editor-sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-top: 1px solid var(--neutral-200); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,.06); }
+.editor-sticky-bar .sticky-left { font-size: 0.83rem; color: var(--neutral-500); }
+.editor-sticky-bar .sticky-right { display: flex; gap: 10px; }
+.save-indicator { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; }
+.save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neutral-300); }
+.save-dot.saved { background: #10b981; }
+.save-dot.unsaved { background: #f59e0b; }
+@media (max-width: 640px) { .form-row-2, .form-row-3 { grid-template-columns: 1fr; } .editor-sticky-bar { flex-direction: column; gap: 10px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editor-page">
+  <div class="editor-breadcrumb">
+    <a href="{{ url_for('tai_khoan') }}">Tài Khoản</a>
+    <span>›</span>
+    <a href="{{ url_for('tai_khoan') }}#my-courses">Khóa Học Tôi Tạo</a>
+    <span>›</span>
+    <span>Chỉnh Sửa Khóa Học</span>
+  </div>
+  <div class="editor-header">
+    <h1>📚 Chỉnh Sửa Khóa Học</h1>
+    <div class="header-actions">
+      <a href="{{ url_for('tai_khoan') }}#my-courses" class="btn-outline-sm">← Quay lại</a>
+    </div>
+  </div>
+
+  <div class="editor-section" id="section-basic">
+    <div class="editor-section-header" onclick="toggleSection('basic')">
+      <h3>📋 Thông Tin Khóa Học</h3>
+      <span class="section-toggle-icon">▾</span>
+    </div>
+    <div class="editor-section-body">
+      <form id="course-basic-form" enctype="multipart/form-data">
+        <div class="form-group">
+          <label>Tên Khóa Học *</label>
+          <input type="text" name="title" value="{{ course.title }}" required placeholder="Ví dụ: Học Python Từ Cơ Bản">
+        </div>
+        <div class="form-group">
+          <label>Mô Tả</label>
+          <textarea name="description" rows="4" placeholder="Mô tả nội dung và mục tiêu khóa học...">{{ course.description or '' }}</textarea>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Giá Khóa Học (₫)</label>
+            <input type="number" name="price" value="{{ course.price or 0 }}" min="0" step="1000" placeholder="0 = miễn phí">
+          </div>
+          <div class="form-group">
+            <label>Giá Gốc (₫)</label>
+            <input type="number" name="original_price" value="{{ course.original_price or '' }}" min="0" step="1000" placeholder="Để trống nếu không có">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Danh Mục</label>
+            <select name="category_id">
+              <option value="">-- Không có --</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if course.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cấp Độ</label>
+            <select name="level">
+              <option value="beginner"     {% if course.level=='beginner' %}selected{% endif %}>🌱 Cơ bản</option>
+              <option value="intermediate" {% if course.level=='intermediate' %}selected{% endif %}>📈 Trung cấp</option>
+              <option value="advanced"     {% if course.level=='advanced' %}selected{% endif %}>🚀 Nâng cao</option>
+            </select>
+          </div>
+        </div>
+        <!-- Ảnh bìa: URL hoặc upload file -->
+        <div class="form-group">
+          <label>Ảnh Bìa</label>
+          {% if course.thumbnail %}
+          <div id="current-thumb" style="margin-bottom:10px;">
+            <img src="{{ course.thumbnail }}" alt="Ảnh bìa hiện tại"
+                 style="width:160px;height:90px;object-fit:cover;border-radius:8px;border:1.5px solid var(--neutral-200);">
+            <div style="font-size:0.75rem;color:var(--neutral-400);margin-top:4px;">Ảnh bìa hiện tại</div>
+          </div>
+          {% endif %}
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <label style="font-size:0.78rem;color:var(--neutral-500);font-weight:500;margin-bottom:4px;">📎 Upload file ảnh</label>
+              <input type="file" name="thumbnail_file" accept="image/*" id="thumb-file-input"
+                     style="width:100%;padding:8px;border:1.5px solid var(--neutral-200);border-radius:10px;font-size:0.85rem;box-sizing:border-box;"
+                     onchange="previewThumb(this)">
+            </div>
+            <div style="text-align:center;font-size:0.78rem;color:var(--neutral-400);">— hoặc —</div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--neutral-500);font-weight:500;margin-bottom:4px;">🔗 Dán link URL ảnh</label>
+              <input type="url" name="thumbnail" id="thumb-url-input" value="{{ course.thumbnail or '' }}"
+                     placeholder="https://..." oninput="previewThumbUrl(this.value)">
+            </div>
+            <div id="thumb-preview-wrap" style="display:none;">
+              <img id="thumb-preview" src="" alt="Preview"
+                   style="width:160px;height:90px;object-fit:cover;border-radius:8px;border:1.5px solid var(--brand-200);">
+              <div style="font-size:0.75rem;color:var(--brand-600);margin-top:4px;">Xem trước ảnh mới</div>
+            </div>
+          </div>
+        </div>
+        <div id="course-basic-msg" class="form-message"></div>
+        <button type="submit" class="btn-primary">💾 Lưu Thông Tin Khóa Học</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="editor-section" id="section-lessons">
+    <div class="editor-section-header" onclick="toggleSection('lessons')">
+      <h3>🎬 Danh Sách Bài Học <span style="font-weight:400;color:var(--neutral-400);font-size:0.85rem;">({{ lessons|length }} bài)</span></h3>
+      <span class="section-toggle-icon">▾</span>
+    </div>
+    <div class="editor-section-body">
+      <div class="lesson-list" id="lesson-list">
+        {% for lesson in lessons %}
+        <div class="lesson-item" id="lesson-row-{{ lesson.id }}">
+          <span class="lesson-order">{{ lesson.order_num }}</span>
+          <div class="lesson-info">
+            <div class="lesson-title">{{ lesson.title }}</div>
+            <div class="lesson-meta">
+              {% if lesson.duration_minutes %}⏱ {{ lesson.duration_minutes }} phút{% endif %}
+              {% if lesson.is_free %}<span style="color:#16a34a;font-weight:600;">{{ ' · ' if lesson.duration_minutes }}Miễn phí</span>{% endif %}
+            </div>
+          </div>
+          <div class="lesson-actions">
+            <a href="{{ url_for('chinh_sua_bai_hoc', lesson_id=lesson.id) }}" class="btn-outline-sm">✏️ Sửa</a>
+            <button class="btn-outline-sm" style="color:#ef4444;border-color:#fca5a5;" onclick="deleteLesson({{ lesson.id }}, {{ lesson.title|tojson }})">🗑</button>
+          </div>
+        </div>
+        {% else %}
+        <div id="empty-lessons" style="text-align:center;padding:32px;color:var(--neutral-400);font-size:0.9rem;">
+          Chưa có bài học nào. Hãy thêm bài học đầu tiên!
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="add-lesson-form" id="add-lesson-form">
+        <div style="font-size:0.9rem;font-weight:700;color:var(--brand-700);margin-bottom:14px;">➕ Thêm Bài Học Mới</div>
+        <div class="form-group">
+          <label>Tiêu Đề Bài Học *</label>
+          <input type="text" id="new-lesson-title" placeholder="Ví dụ: Giới thiệu về Python">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Thứ Tự</label>
+            <input type="number" id="new-lesson-order" value="{{ lessons|length + 1 }}" min="1">
+          </div>
+          <div class="form-group">
+            <label>Thời Lượng (phút)</label>
+            <input type="number" id="new-lesson-duration" min="1" placeholder="30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>URL Video (tùy chọn)</label>
+          <input type="url" id="new-lesson-video" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="new-lesson-free" style="accent-color:var(--brand-500);width:16px;height:16px;">
+            Bài học này miễn phí (preview)
+          </label>
+        </div>
+        <div id="add-lesson-msg" class="form-message"></div>
+        <div style="display:flex;gap:10px;">
+          <button type="button" class="btn-outline-sm" onclick="closeAddLessonForm()">Hủy</button>
+          <button type="button" class="btn-primary" onclick="submitAddLesson()">+ Thêm Bài Học</button>
+        </div>
+      </div>
+
+      <button class="add-lesson-btn" id="btn-open-add-lesson" onclick="openAddLessonForm()">+ Thêm Bài Học Mới</button>
+    </div>
+  </div>
+
+  <div class="editor-section" id="section-files">
+    <div class="editor-section-header" onclick="toggleSection('files')">
+      <h3>📎 File Khóa Học <span style="font-weight:400;color:var(--neutral-400);font-size:0.85rem;">({{ course_files|length }} file)</span></h3>
+      <span class="section-toggle-icon">▾</span>
+    </div>
+    <div class="editor-section-body">
+      <form id="course-file-form" enctype="multipart/form-data" style="margin-bottom:14px;">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Tên file hiển thị (tùy chọn)</label>
+            <input type="text" name="title" placeholder="Ví dụ: Slide chương 1">
+          </div>
+          <div class="form-group">
+            <label>Chọn file *</label>
+            <input type="file" name="file" required>
+          </div>
+        </div>
+        <div id="course-file-msg" class="form-message"></div>
+        <button type="submit" class="btn-primary">+ Thêm file vào khóa học</button>
+      </form>
+
+      <div class="course-file-list" id="course-file-list">
+        {% for f in course_files %}
+        <div class="course-file-item" id="course-file-row-{{ f.id }}">
+          <div class="course-file-main">
+            <div class="course-file-title">{{ f.title }}</div>
+            <div class="course-file-name">{{ f.file_name or f.file_url }}</div>
+          </div>
+          <div class="course-file-actions">
+            <a href="{{ f.file_url }}" target="_blank" class="btn-outline-sm">⬇ Tải</a>
+            <button type="button" class="btn-outline-sm" style="color:#ef4444;border-color:#fca5a5;" onclick="deleteCourseFile({{ f.id }}, {{ f.title|tojson }})">🗑 Xóa</button>
+          </div>
+        </div>
+        {% else %}
+        <div id="empty-course-files" style="text-align:center;padding:24px;color:var(--neutral-400);font-size:0.9rem;">
+          Chưa có file nào cho khóa học này.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div style="height:70px;"></div>
+</div>
+
+<div class="editor-sticky-bar">
+  <div class="sticky-left">
+    <div class="save-indicator">
+      <div class="save-dot" id="save-dot"></div>
+      <span id="save-status">Chưa có thay đổi</span>
+    </div>
+  </div>
+  <div class="sticky-right">
+    <a href="{{ url_for('tai_khoan') }}#my-courses" class="btn-outline-sm">← Về Tài Khoản</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const COURSE_ID = {{ course.id }};
+function toggleSection(name) { document.getElementById('section-' + name).classList.toggle('collapsed'); }
+function markUnsaved() {
+  const dot = document.getElementById('save-dot'), txt = document.getElementById('save-status');
+  if (dot) dot.className = 'save-dot unsaved';
+  if (txt) txt.textContent = 'Có thay đổi chưa lưu';
+}
+function markSaved() {
+  const dot = document.getElementById('save-dot'), txt = document.getElementById('save-status');
+  if (dot) dot.className = 'save-dot saved';
+  if (txt) txt.textContent = 'Đã lưu';
+}
+document.querySelectorAll('#course-basic-form input, #course-basic-form select, #course-basic-form textarea').forEach(el => {
+  el.addEventListener('input', markUnsaved);
+  el.addEventListener('change', markUnsaved);
+});
+document.getElementById('course-basic-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  const orig = btn.textContent; btn.textContent = '⏳ Đang lưu...'; btn.disabled = true;
+  try {
+    const res  = await fetch(`/cap-nhat-khoa-hoc/${COURSE_ID}`, { method: 'POST', body: new FormData(e.target) });
+    const data = await res.json();
+    showFormMsg('course-basic-msg', data.message, data.success ? 'success' : 'error');
+    if (data.success) {
+      showToast('Đã lưu khóa học!', 'success'); markSaved();
+      // Cập nhật ảnh bìa nếu server trả về thumbnail mới
+      if (data.thumbnail) {
+        const curThumbWrap = document.getElementById('current-thumb');
+        if (curThumbWrap) {
+          curThumbWrap.querySelector('img').src = data.thumbnail;
+        } else {
+          const wrap = document.createElement('div');
+          wrap.id = 'current-thumb';
+          wrap.style.marginBottom = '10px';
+          wrap.innerHTML = `<img src="${data.thumbnail}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;border:1.5px solid var(--neutral-200);"><div style="font-size:0.75rem;color:var(--neutral-400);margin-top:4px;">Ảnh bìa hiện tại</div>`;
+          document.getElementById('thumb-file-input').closest('.form-group').prepend(wrap);
+        }
+        // Reset preview
+        document.getElementById('thumb-preview-wrap').style.display = 'none';
+        document.getElementById('thumb-file-input').value = '';
+      }
+    }
+  } catch { showFormMsg('course-basic-msg', 'Lỗi kết nối.', 'error'); }
+  btn.textContent = orig; btn.disabled = false;
+});
+
+function previewThumb(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('thumb-preview').src = e.target.result;
+    document.getElementById('thumb-preview-wrap').style.display = '';
+    // Xóa URL input khi chọn file
+    document.getElementById('thumb-url-input').value = '';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function previewThumbUrl(val) {
+  if (!val) { document.getElementById('thumb-preview-wrap').style.display = 'none'; return; }
+  const img = document.getElementById('thumb-preview');
+  img.src = val;
+  img.onerror = () => { document.getElementById('thumb-preview-wrap').style.display = 'none'; };
+  img.onload  = () => { document.getElementById('thumb-preview-wrap').style.display = ''; };
+  // Xóa file input khi nhập URL
+  document.getElementById('thumb-file-input').value = '';
+}
+function openAddLessonForm() {
+  document.getElementById('add-lesson-form').classList.add('open');
+  document.getElementById('btn-open-add-lesson').style.display = 'none';
+  document.getElementById('new-lesson-title').focus();
+}
+function closeAddLessonForm() {
+  document.getElementById('add-lesson-form').classList.remove('open');
+  document.getElementById('btn-open-add-lesson').style.display = '';
+  ['new-lesson-title','new-lesson-duration','new-lesson-video'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('new-lesson-free').checked = false;
+  document.getElementById('add-lesson-msg').innerHTML = '';
+}
+async function submitAddLesson() {
+  const title = document.getElementById('new-lesson-title').value.trim();
+  if (!title) { showFormMsg('add-lesson-msg', 'Vui lòng nhập tiêu đề bài học.', 'error'); return; }
+  const btn = document.querySelector('#add-lesson-form .btn-primary');
+  const orig = btn.textContent; btn.textContent = '⏳ Đang thêm...'; btn.disabled = true;
+  const fd = new FormData();
+  fd.append('course_id', COURSE_ID);
+  fd.append('title', title);
+  fd.append('order_num', document.getElementById('new-lesson-order').value || 1);
+  fd.append('duration_minutes', document.getElementById('new-lesson-duration').value || '');
+  fd.append('video_url', document.getElementById('new-lesson-video').value.trim());
+  fd.append('is_free', document.getElementById('new-lesson-free').checked ? '1' : '');
+  try {
+    const res  = await fetch('/them-bai-hoc', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Đã thêm bài học!', 'success');
+      const emptyEl = document.getElementById('empty-lessons');
+      if (emptyEl) emptyEl.remove();
+      const list  = document.getElementById('lesson-list');
+      const order = document.getElementById('new-lesson-order').value || 1;
+      const dur   = document.getElementById('new-lesson-duration').value;
+      const isFree = document.getElementById('new-lesson-free').checked;
+      list.insertAdjacentHTML('beforeend', `
+        <div class="lesson-item" id="lesson-row-${data.lesson_id}">
+          <span class="lesson-order">${order}</span>
+          <div class="lesson-info">
+            <div class="lesson-title">${escHtml(title)}</div>
+            <div class="lesson-meta">${dur ? '⏱ ' + dur + ' phút' : ''}${isFree ? (dur ? ' · ' : '') + '<span style="color:#16a34a;font-weight:600;">Miễn phí</span>' : ''}</div>
+          </div>
+          <div class="lesson-actions">
+            <a href="/chinh-sua-bai-hoc/${data.lesson_id}" class="btn-outline-sm">✏️ Sửa</a>
+            <button class="btn-outline-sm" style="color:#ef4444;border-color:#fca5a5;" onclick="deleteLesson(${data.lesson_id}, ${JSON.stringify(title)})">🗑</button>
+          </div>
+        </div>`);
+      document.getElementById('new-lesson-order').value = parseInt(order) + 1;
+      closeAddLessonForm();
+    } else { showFormMsg('add-lesson-msg', data.message, 'error'); }
+  } catch { showFormMsg('add-lesson-msg', 'Lỗi kết nối.', 'error'); }
+  btn.textContent = orig; btn.disabled = false;
+}
+async function deleteLesson(id, title) {
+  if (!confirm(`Xóa bài học "${title}"? Tất cả tài liệu và bài tập sẽ bị xóa theo.`)) return;
+  try {
+    const res  = await fetch(`/xoa-bai-hoc/${id}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById(`lesson-row-${id}`)?.remove();
+      showToast('Đã xóa bài học!', 'success');
+      if (!document.querySelector('#lesson-list .lesson-item')) {
+        document.getElementById('lesson-list').innerHTML =
+          '<div id="empty-lessons" style="text-align:center;padding:32px;color:var(--neutral-400);font-size:0.9rem;">Chưa có bài học nào. Hãy thêm bài học đầu tiên!</div>';
+      }
+    } else { showToast(data.message, 'error'); }
+  } catch { showToast('Lỗi kết nối.', 'error'); }
+}
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+document.getElementById('course-file-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  const orig = btn.textContent; btn.textContent = '⏳ Đang tải...'; btn.disabled = true;
+  const fd = new FormData(e.target);
+  fd.append('course_id', COURSE_ID);
+  try {
+    const res = await fetch('/them-file-khoa-hoc', { method: 'POST', body: fd });
+    const data = await res.json();
+    showFormMsg('course-file-msg', data.message, data.success ? 'success' : 'error');
+    if (data.success && data.file) {
+      document.getElementById('empty-course-files')?.remove();
+      document.getElementById('course-file-list').insertAdjacentHTML('afterbegin', `
+        <div class="course-file-item" id="course-file-row-${data.file.id}">
+          <div class="course-file-main">
+            <div class="course-file-title">${escHtml(data.file.title)}</div>
+            <div class="course-file-name">${escHtml(data.file.file_name || '')}</div>
+          </div>
+          <div class="course-file-actions">
+            <a href="${data.file.file_url}" target="_blank" class="btn-outline-sm">⬇ Tải</a>
+            <button type="button" class="btn-outline-sm" style="color:#ef4444;border-color:#fca5a5;" onclick='deleteCourseFile(${data.file.id}, ${JSON.stringify(data.file.title)})'>🗑 Xóa</button>
+          </div>
+        </div>`);
+      e.target.reset();
+      showToast('Đã thêm file cho khóa học!', 'success');
+    }
+  } catch {
+    showFormMsg('course-file-msg', 'Lỗi kết nối.', 'error');
+  }
+  btn.textContent = orig; btn.disabled = false;
+});
+
+async function deleteCourseFile(id, title) {
+  if (!confirm(`Xóa file "${title}"?`)) return;
+  try {
+    const res = await fetch(`/xoa-file-khoa-hoc/${id}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById(`course-file-row-${id}`)?.remove();
+      showToast('Đã xóa file!', 'success');
+      if (!document.querySelector('#course-file-list .course-file-item')) {
+        document.getElementById('course-file-list').innerHTML =
+          '<div id="empty-course-files" style="text-align:center;padding:24px;color:var(--neutral-400);font-size:0.9rem;">Chưa có file nào cho khóa học này.</div>';
+      }
+    } else {
+      showToast(data.message || 'Không thể xóa file.', 'error');
+    }
+  } catch {
+    showToast('Lỗi kết nối.', 'error');
+  }
+}
+</script>
+{% endblock %}

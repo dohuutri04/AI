@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quên Mật Khẩu – EduConnect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/base.css">
+  <link rel="stylesheet" href="../static/css/responsive.css">
+  <link rel="stylesheet" href="../static/css/quen-mat-khau.css">
+</head>
+<body>
+<section class="auth-page">
+  <div class="auth-bg"></div>
+  <div class="container auth-container">
+    <div class="auth-card">
+      <div class="steps">
+        <div class="step active"><div class="step-circle">1</div><div class="step-label">Xác nhận email</div></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-circle">2</div><div class="step-label">Nhập mã OTP</div></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-circle">3</div><div class="step-label">Mật khẩu mới</div></div>
+      </div>
+
+      <div class="step-panel active" id="step-1">
+        <div class="auth-card-header"><div class="auth-icon">🔐</div><h2>Quên Mật Khẩu?</h2><p>Nhập email của bạn để nhận mã OTP đặt lại mật khẩu</p></div>
+        <form class="form-card" onsubmit="return false;"><div class="form-group"><label>Địa Chỉ Email</label><input type="email" placeholder="email@example.com" required></div><button type="button" class="btn-primary full-width" onclick="showToast('Trang tĩnh: không gửi OTP thật.', 'error')">Gửi Mã OTP →</button></form>
+        <div class="auth-back"><a href="trang-chu.html">← Quay về trang chủ</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="../static/js/main.js"></script>
+</body>
+</html>

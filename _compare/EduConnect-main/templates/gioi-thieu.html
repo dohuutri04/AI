@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giới Thiệu – EduConnect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/base.css">
+  <link rel="stylesheet" href="../static/css/responsive.css">
+  <link rel="stylesheet" href="../static/css/gioi-thieu.css">
+</head>
+<body>
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="trang-chu.html" class="logo"><span class="logo-icon">🎓</span><span class="logo-text">Edu<strong>Connect</strong></span></a>
+    <nav class="main-nav" id="main-nav"><a href="trang-chu.html" class="nav-link">Trang Chủ</a><a href="tat-ca-khoa-hoc.html" class="nav-link">Khóa Học</a><a href="gioi-thieu.html" class="nav-link active">Giới Thiệu</a><a href="lien-he.html" class="nav-link">Liên Hệ</a></nav>
+    <div class="header-actions"><button class="btn-outline-sm" onclick="openModal('login-modal')">Đăng Nhập</button><button class="btn-primary-sm" onclick="openModal('register-modal')">Đăng Ký</button></div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+
+<main>
+<section class="about-hero"><div class="container about-hero-inner"><div class="about-hero-content"><span class="section-label">Về Chúng Tôi</span><h1>Chúng Tôi Là <span style="color:var(--accent-400)">EduConnect</span></h1><p>EduConnect là nền tảng giáo dục trực tuyến hàng đầu Việt Nam, với sứ mệnh đưa kiến thức thực chiến đến với mọi người.</p><div class="about-mini-stats"><div class="about-stat"><strong>2019</strong><span>Năm thành lập</span></div><div class="about-stat"><strong>50+</strong><span>Khóa học</span></div><div class="about-stat"><strong>3K+</strong><span>Học viên</span></div><div class="about-stat"><strong>98%</strong><span>Hài lòng</span></div></div></div><div class="about-hero-visual"><div class="about-bg-orb"></div><div class="about-emoji-grid"><div class="ae-card">🎓</div><div class="ae-card">💻</div><div class="ae-card">📈</div><div class="ae-card">🚀</div></div></div></div></section>
+<section class="section section-alt"><div class="container"><div class="section-head center"><span class="section-label">Sứ Mệnh</span><h2 class="section-title">Vì Sao EduConnect Ra Đời</h2></div><div class="mission-grid"><div class="mission-card"><div class="mission-num">01</div><h3>Khoảng Cách Giáo Dục</h3><p>Nhiều người trẻ muốn học kỹ năng số nhưng thiếu điều kiện tiếp cận khóa học chất lượng.</p></div><div class="mission-card"><div class="mission-num">02</div><h3>Kiến Thức Thực Chiến</h3><p>Chúng tôi tập trung vào nội dung áp dụng ngay được, do người có kinh nghiệm thực tế giảng dạy.</p></div><div class="mission-card"><div class="mission-num">03</div><h3>Học Không Giới Hạn</h3><p>EduConnect xóa bỏ rào cản địa lý, thời gian và chi phí trong việc học tập.</p></div></div></div></section>
+<section class="section"><div class="container"><div class="section-head center"><span class="section-label">Giá Trị Cốt Lõi</span><h2 class="section-title">Những Gì Chúng Tôi Tin</h2></div><div class="values-list"><div class="value-item"><div class="value-icon">🎯</div><div class="value-body"><h3>Thực Chiến Trên Hết</h3><p>Mỗi bài học gắn liền thực tế.</p></div></div><div class="value-item"><div class="value-icon">🤝</div><div class="value-body"><h3>Cộng Đồng Học Tập</h3><p>Không ai học một mình trên hành trình phát triển.</p></div></div><div class="value-item"><div class="value-icon">♻️</div><div class="value-body"><h3>Cập Nhật Liên Tục</h3><p>Nội dung luôn được làm mới theo thị trường.</p></div></div><div class="value-item"><div class="value-icon">💎</div><div class="value-body"><h3>Chất Lượng Cam Kết</h3><p>Cam kết hoàn tiền 30 ngày nếu không hài lòng.</p></div></div></div></div></section>
+<section class="section section-alt"><div class="container"><div class="section-head center"><span class="section-label">Đội Ngũ</span><h2 class="section-title">Giảng Viên Của Chúng Tôi</h2></div><div class="instructors-grid"><div class="instructor-card"><div class="ins-avatar">A</div><h3 class="ins-name">Nguyễn Văn An</h3><p class="ins-role">Giảng Viên EduConnect</p><p class="ins-bio">Chuyên gia thực chiến về Web và Product.</p></div><div class="instructor-card"><div class="ins-avatar">B</div><h3 class="ins-name">Trần Thị Bình</h3><p class="ins-role">Giảng Viên EduConnect</p><p class="ins-bio">Chuyên gia SEO và Digital Marketing.</p></div><div class="instructor-card"><div class="ins-avatar" style="background:var(--accent-500);color:#1a1a1a;">C</div><h3 class="ins-name">Lê Minh Cường</h3><p class="ins-role">Giảng Viên EduConnect</p><p class="ins-bio">Chuyên gia Kinh doanh Online và Affiliate.</p></div></div></div></section>
+<section class="about-cta"><div class="container" style="text-align:center;"><h2>Sẵn Sàng Bắt Đầu?</h2><p>Tham gia EduConnect và bắt đầu hành trình thay đổi cuộc đời ngay hôm nay.</p><div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:28px;"><a href="tat-ca-khoa-hoc.html" class="btn-primary">Xem Khóa Học</a><a href="lien-he.html" class="btn-outline" style="border-color:rgba(255,255,255,0.4);color:white;">Liên Hệ Chúng Tôi</a></div></div></section>
+</main>
+
+<script src="../static/js/main.js"></script>
+</body>
+</html>

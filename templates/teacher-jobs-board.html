@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Bảng tuyển giáo viên{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 style="margin-bottom:6px;">Bảng tuyển giáo viên</h1>
+    <p style="color:#64748b;margin-bottom:20px;">Các khóa học đang tìm giáo viên cộng tác.</p>
+    {% if jobs %}
+    <div style="display:grid;gap:12px;">
+      {% for j in jobs %}
+      <article class="form-card">
+        <h3 style="margin-bottom:6px;">{{ j.title }}</h3>
+        <p style="margin-bottom:8px;"><strong>Khóa học:</strong> {{ j.course_title }} | <strong>Người đăng:</strong> {{ j.owner_name }}</p>
+        <p style="white-space:pre-line;">{{ j.description }}</p>
+        {% if j.requirements %}
+        <p><strong>Yêu cầu:</strong> {{ j.requirements }}</p>
+        {% endif %}
+        <a class="btn-primary-sm" href="{{ url_for('apply_teacher_job', job_id=j.id) }}">Ứng tuyển</a>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>Hiện chưa có tin tuyển nào đang mở.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

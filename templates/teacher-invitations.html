@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block title %}Lời mời giảng dạy{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:900px;">
+    <h1>Lời mời giảng dạy của tôi</h1>
+    {% if invitations %}
+    <div style="display:grid;gap:12px;">
+      {% for i in invitations %}
+      <article class="form-card">
+        <h3>{{ i.course_title }}</h3>
+        <p>Người mời: {{ i.owner_name }}</p>
+        <p>Trạng thái: <strong>{{ i.status }}</strong></p>
+        {% if i.message %}<p>Tin nhắn: {{ i.message }}</p>{% endif %}
+        {% if i.status == 'pending' %}
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary-sm" onclick="respondInvite({{ i.id }}, 'accept')">Chấp nhận</button>
+          <button class="btn-outline-sm" onclick="respondInvite({{ i.id }}, 'reject')">Từ chối</button>
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>Bạn chưa có lời mời nào.</p>
+    {% endif %}
+  </div>
+</section>
+<script>
+async function respondInvite(invitationId, action) {
+  const res = await fetch('/teacher-invitations/' + invitationId + '/' + action, { method: 'POST' });
+  const data = await res.json();
+  alert(data.message || 'Đã xử lý');
+  if (data.success) location.reload();
+}
+</script>
+{% endblock %}

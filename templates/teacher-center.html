@@ -1,0 +1,201 @@
+{% extends "layout.html" %}
+{% block title %}Quản lý tuyển giáo viên{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom:14px;">
+      <a href="{{ url_for('tai_khoan') }}" class="btn-outline-sm">← Quay lại trang tài khoản</a>
+    </div>
+    <h1 style="margin-bottom:6px;">Quản lý giáo viên cho: {{ course.title }}</h1>
+    <p style="color:#64748b;margin-bottom:20px;">Mời giáo viên nội bộ, đăng tuyển, duyệt ứng viên.</p>
+    <div style="margin-bottom:18px;">
+      <a href="#applications-section" class="btn-primary-sm">Xem danh sách ứng tuyển ({{ applications|length }})</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div class="form-card">
+        <h3>Mời giáo viên nội bộ</h3>
+        <form id="invite-form">
+          <input type="hidden" name="course_id" value="{{ course.id }}">
+          <div class="form-group">
+            <label>Chọn người dùng</label>
+            <select name="invited_user_id" required>
+              <option value="">-- Chọn --</option>
+              {% for u in users %}
+              <option value="{{ u.id }}">{{ u.name }} ({{ u.email }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Lời nhắn</label>
+            <textarea name="message" rows="2" placeholder="Mời bạn cùng giảng dạy khóa học này..."></textarea>
+          </div>
+          <button class="btn-primary-sm" type="submit">Gửi lời mời</button>
+        </form>
+      </div>
+
+      <div class="form-card">
+        <h3>Đăng tuyển giáo viên</h3>
+        <form id="job-form">
+          <div class="form-group"><label>Tiêu đề</label><input name="title" required></div>
+          <div class="form-group"><label>Mô tả</label><textarea name="description" rows="3" required></textarea></div>
+          <div class="form-group"><label>Yêu cầu</label><textarea name="requirements" rows="2"></textarea></div>
+          <div class="form-group"><label>Hạn nộp</label><input type="date" name="deadline"></div>
+          <button class="btn-primary-sm" type="submit">Đăng tin</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="form-card" style="margin-bottom:20px;">
+      <h3>Giáo viên hiện tại</h3>
+      {% if teachers %}
+      <ul>
+        {% for t in teachers %}
+        <li>{{ t.name }} ({{ t.email }}) - {{ t.role_in_course }} - {{ t.status }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>Chưa có giáo viên cộng tác nào.</p>
+      {% endif %}
+    </div>
+
+    <div class="form-card" style="margin-bottom:20px;">
+      <h3>Lời mời đã gửi</h3>
+      {% if invitations %}
+      <ul>
+        {% for i in invitations %}
+        <li>{{ i.invited_name }} ({{ i.invited_email }}) - {{ i.status }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>Chưa có lời mời nào.</p>
+      {% endif %}
+    </div>
+
+    <div class="form-card" style="margin-bottom:20px;">
+      <h3>Tin tuyển giáo viên</h3>
+      {% if jobs %}
+      <ul>
+        {% for j in jobs %}
+        <li>
+          <strong>{{ j.title }}</strong> - {{ j.status }}
+          <button class="btn-outline-sm" onclick="toggleJob({{ j.id }}, '{{ 'closed' if j.status == 'open' else 'open' }}')">
+            {{ 'Đóng tin' if j.status == 'open' else 'Mở lại' }}
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>Chưa có tin tuyển nào.</p>
+      {% endif %}
+    </div>
+
+    <div class="form-card" id="applications-section">
+      <h3>Danh sách ứng tuyển để duyệt</h3>
+      {% if applications %}
+      <div style="overflow:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Ứng viên</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Vị trí</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Liên hệ</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Trạng thái</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Tệp đính kèm</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;">Duyệt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in applications %}
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;">
+                <strong>{{ a.applicant_name }}</strong><br>
+                <small style="color:#64748b;">{{ a.created_at }}</small>
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;">{{ a.job_title }}</td>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;">
+                {{ a.contact_email }}<br>
+                {% if a.contact_phone %}<small>{{ a.contact_phone }}</small>{% endif %}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;"><strong>{{ a.status }}</strong></td>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;">
+                {% if a.attachment_refs %}
+                  {% for ref in a.attachment_refs.split('||') %}
+                    {% set parts = ref.split(':', 1) %}
+                    {% if parts|length == 2 %}
+                    <a href="{{ parts[1] }}" target="_blank" rel="noopener">{{ parts[0] }}</a><br>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <span style="color:#94a3b8;">Không có tệp</span>
+                {% endif %}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #f1f5f9;">
+                <button type="button" class="btn-outline-sm" onclick="reviewApp({{ a.id }}, 'shortlisted')">Shortlist</button>
+                <button type="button" class="btn-outline-sm" onclick="reviewApp({{ a.id }}, 'accepted')">Accept</button>
+                <button type="button" class="btn-outline-sm" onclick="reviewApp({{ a.id }}, 'rejected')">Reject</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p>Chưa có ứng viên nào.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<script>
+document.getElementById('invite-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/courses/{{ course.id }}/teacher-invitations', { method: 'POST', body: fd });
+  const data = await res.json();
+  alert(data.message || 'Đã xử lý');
+  if (data.success) location.reload();
+});
+document.getElementById('job-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/courses/{{ course.id }}/teacher-jobs', { method: 'POST', body: fd });
+  const data = await res.json();
+  alert(data.message || 'Đã xử lý');
+  if (data.success) location.reload();
+});
+async function toggleJob(jobId, status) {
+  const res = await fetch('/teacher-jobs/' + jobId, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  const data = await res.json();
+  alert(data.message || 'Đã cập nhật');
+  if (data.success) location.reload();
+}
+async function reviewApp(applicationId, status) {
+  const note = prompt('Ghi chú duyệt hồ sơ (tùy chọn):', '') || '';
+  try {
+    let res = await fetch('/teacher-applications/' + applicationId + '/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, review_note: note })
+    });
+    if (!res.ok && (res.status === 405 || res.status === 415)) {
+      const fd = new FormData();
+      fd.append('status', status);
+      fd.append('review_note', note);
+      res = await fetch('/teacher-applications/' + applicationId + '/status', {
+        method: 'POST',
+        body: fd
+      });
+    }
+    const data = await res.json();
+    alert(data.message || 'Đã cập nhật');
+    if (data.success) location.reload();
+  } catch (err) {
+    alert('Không gửi được yêu cầu duyệt. Vui lòng thử lại.');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,435 @@
+{% extends "layout.html" %}
+{% block title %}{{ lesson.title }} – EduConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/xem-bai-hoc.css') }}">
+<style>
+/* ── Video ── */
+.video-wrapper {
+  background: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.video-placeholder {
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  gap: 14px;
+}
+.play-icon {
+  width: 80px; height: 80px;
+  background: var(--brand-500);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 0 0 16px rgba(99,102,241,0.12);
+}
+iframe.lesson-video { width: 100%; aspect-ratio: 16/9; border: none; display: block; }
+video.lesson-video  { width: 100%; aspect-ratio: 16/9; background: #000; display: block; }
+
+/* ── Progress bar ── */
+.course-progress-row {
+  padding: 10px 20px 14px;
+  border-bottom: 1px solid var(--neutral-100);
+}
+.course-progress-row .prog-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; color: var(--neutral-400); margin-bottom: 6px;
+  font-weight: 600;
+}
+.thin-bar { height: 5px; background: var(--neutral-200); border-radius: 3px; overflow: hidden; }
+.thin-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-500), var(--brand-400)); border-radius: 3px; transition: width .6s ease; }
+
+/* ── Sidebar lesson num states ── */
+.ls-num.done { background: var(--brand-500) !important; color: #fff !important; font-size: 0.65rem; }
+.ls-lesson-item.ls-lesson-locked:hover { background: transparent; color: var(--neutral-500); border-left-color: transparent; cursor: not-allowed; }
+
+/* ── Instructor card ── */
+.instructor-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--brand-50), #fff);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid var(--brand-100);
+}
+.instructor-avatar {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 1.2rem; flex-shrink: 0;
+}
+.instructor-info h5 { font-size: 0.9rem; font-weight: 700; margin: 0 0 2px; color: var(--neutral-800); }
+.instructor-info p  { font-size: 0.78rem; color: var(--neutral-500); margin: 0; }
+
+/* ── Edit btn ── */
+.lesson-edit-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+.lesson-edit-btn:hover { background: var(--brand-50); color: var(--brand-600); border-color: var(--brand-300); }
+
+/* ── Complete btn states ── */
+.complete-btn.is-done { background: #059669 !important; border-color: #059669 !important; }
+
+/* ── Note autosave ── */
+#note-autosave { font-size: 0.75rem; color: var(--neutral-400); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-layout">
+
+  <!-- ═══════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════ -->
+  <aside class="lesson-sidebar" id="lesson-sidebar">
+
+    <!-- Header -->
+    <div class="ls-header">
+      <a href="{{ url_for('tai_khoan') }}" class="ls-back">← Tài Khoản Của Tôi</a>
+      <h3 class="ls-course-title">{{ lesson.course_title }}</h3>
+      <div style="margin-top:6px;font-size:0.75rem;color:var(--brand-300);font-weight:600;">
+        {{ all_lessons|length }} bài học
+      </div>
+    </div>
+
+    <!-- Tiến độ -->
+    <div class="course-progress-row">
+      <div class="prog-label">
+        <span>Tiến độ khóa học</span>
+        <span id="sidebar-pct">0%</span>
+      </div>
+      <div class="thin-bar">
+        <div class="thin-bar-fill" id="sidebar-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Danh sách bài học -->
+    <div class="ls-lessons">
+      {% for l in all_lessons %}
+      {% set can_view = is_instructor or is_enrolled or l.is_free %}
+      <a href="{% if can_view %}{{ url_for('xem_bai_hoc', lesson_id=l.id) }}{% else %}#{% endif %}"
+         class="ls-lesson-item {% if l.id == lesson.id %}active{% endif %}{% if not can_view %} ls-lesson-locked{% endif %}"
+         data-lesson-id="{{ l.id }}"
+         {% if not can_view %}title="Đăng ký khóa học để mở khóa bài này"{% endif %}>
+        <span class="ls-num" id="ls-num-{{ l.id }}">
+          {% if l.id in completed_lessons %}✓{% else %}{{ loop.index }}{% endif %}
+        </span>
+        <span class="ls-title">{{ l.title }}</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+          {% if l.is_free %}
+            <span style="font-size:0.6rem;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:4px;font-weight:700;line-height:1.5;">FREE</span>
+          {% elif not can_view %}
+            <span style="font-size:0.8rem;color:var(--neutral-400);" title="Cần đăng ký">🔒</span>
+          {% endif %}
+          {% if l.duration_minutes %}
+            <span style="font-size:0.68rem;color:var(--neutral-400);">{{ l.duration_minutes }}p</span>
+          {% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════
+       MAIN
+  ═══════════════════════════════ -->
+  <main class="lesson-main">
+
+    <!-- Toggle sidebar (mobile) -->
+    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleLessonSidebar()">
+      ☰ Danh sách bài
+    </button>
+
+    <!-- Breadcrumb -->
+    <div class="lh-breadcrumb">
+      <a href="{{ url_for('tai_khoan') }}">Tài Khoản</a>
+      <span>›</span>
+      <a href="{{ url_for('tai_khoan') }}#courses">{{ lesson.course_title }}</a>
+      <span>›</span>
+      <span>
+        {% for l in all_lessons %}{% if l.id == lesson.id %}Bài {{ loop.index }}{% endif %}{% endfor %}
+      </span>
+    </div>
+
+    <!-- Tiêu đề bài học -->
+    <div class="lesson-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <h1 class="lesson-title" style="margin:0;">{{ lesson.title }}</h1>
+        {% if is_instructor %}
+        <a href="{{ url_for('chinh_sua_bai_hoc', lesson_id=lesson.id) }}" class="lesson-edit-btn">
+          ✏️ Chỉnh sửa bài
+        </a>
+        {% endif %}
+      </div>
+      <div class="lesson-meta">
+        {% if lesson.duration_minutes %}
+          <span class="lm-tag">⏱ {{ lesson.duration_minutes }} phút</span>
+        {% endif %}
+        {% if lesson.is_free %}
+          <span class="lm-tag lm-free">🆓 Miễn phí</span>
+        {% endif %}
+        {% if materials %}
+          <span class="lm-tag">📄 {{ materials|length }} tài liệu</span>
+        {% endif %}
+        {% if exercises %}
+          <span class="lm-tag">✏️ {{ exercises|length }} bài tập</span>
+        {% endif %}
+        <span class="lm-tag" id="status-badge">📖 Đang học</span>
+      </div>
+    </div>
+
+    <!-- Giảng viên -->
+    {% if lesson.instructor_name is defined and lesson.instructor_name %}
+    <div class="instructor-card">
+      <div class="instructor-avatar">{{ lesson.instructor_name[0] | upper }}</div>
+      <div class="instructor-info">
+        <h5>{{ lesson.instructor_name }}</h5>
+        <p>Giảng viên · {{ lesson.course_title }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Video -->
+    {% if lesson.video_url %}
+    <div class="video-wrapper">
+      {% if 'youtube.com' in lesson.video_url or 'youtu.be' in lesson.video_url %}
+      <iframe class="lesson-video"
+        src="{{ lesson.video_url | replace('watch?v=','embed/') | replace('youtu.be/','www.youtube.com/embed/') }}"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+      {% else %}
+      <video controls class="lesson-video">
+        <source src="{{ lesson.video_url }}">
+        Trình duyệt không hỗ trợ video.
+      </video>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="video-wrapper">
+      <div class="video-placeholder">
+        <div class="play-icon">▶</div>
+        <p style="margin:0;font-weight:600;">Bài học này chưa có video</p>
+        <p style="margin:0;font-size:0.82rem;">Đọc tài liệu học bên dưới</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Nhắc học AI: sẽ hiện khi user gián đoạn 2-3 ngày -->
+    <div id="lesson-ai-reminder" style="display:none;margin:14px 0 10px;padding:12px 14px;border-radius:12px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;"></div>
+    <!-- Banner khi user đi vào bài học từ kế hoạch AI trên tab tài khoản -->
+    <div id="lesson-ai-plan-entry" style="display:none;margin:10px 0 10px;padding:11px 13px;border-radius:12px;border:1px solid #86efac;background:#ecfdf5;color:#166534;"></div>
+
+    <!-- ── Tabs ── -->
+    <div class="lesson-tabs">
+      <button class="ltab active" data-ltab="materials" onclick="switchLessonTab('materials', this)">
+        📄 Tài Liệu{% if materials %} <span class="ltab-count">{{ materials|length }}</span>{% endif %}
+      </button>
+      {% if exercises %}
+      <button class="ltab" data-ltab="exercises" onclick="switchLessonTab('exercises', this)">
+        ✏️ Bài Tập <span class="ltab-count">{{ exercises|length }}</span>
+      </button>
+      {% endif %}
+      <button class="ltab" data-ltab="notes" onclick="switchLessonTab('notes', this)">
+        📝 Ghi Chú
+      </button>
+      <button class="ltab" data-ltab="discuss" onclick="switchLessonTab('discuss', this)">
+        💬 Thảo Luận
+      </button>
+    </div>
+
+    <!-- ── Panel: Tài liệu ── -->
+    <div class="ltab-panel active" id="ltab-materials">
+      {% if materials %}
+        {% for mat in materials %}
+        <div class="material-card">
+          <div class="material-card-header" onclick="toggleMaterialCard(this)">
+            <div class="material-icon">
+              {% if mat.material_type == 'document' %}📄
+              {% elif mat.material_type == 'code' %}💻
+              {% else %}📎{% endif %}
+            </div>
+            <div>
+              <h3 class="material-title">{{ mat.title }}</h3>
+              <span class="material-type-tag">
+                {{ {'document':'Tài liệu đọc','code':'Code mẫu','exercise':'Bài tập'}.get(mat.material_type,'Tài liệu') }}
+              </span>
+            </div>
+            <button class="material-collapse-btn" type="button">▾</button>
+          </div>
+          <div class="material-content" data-content="{{ mat.content or '' }}">
+            <div class="material-body rendered-content"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="empty-lesson-state">
+        <div class="els-icon">📭</div>
+        <h3>Chưa có tài liệu</h3>
+        <p>Tài liệu cho bài học này đang được cập nhật.</p>
+        {% if is_instructor %}
+        <a href="{{ url_for('chinh_sua_bai_hoc', lesson_id=lesson.id) }}" class="btn-primary"
+           style="margin-top:16px;display:inline-block;">+ Thêm tài liệu</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Panel: Bài tập ── -->
+    {% if exercises %}
+    <div class="ltab-panel" id="ltab-exercises">
+      <div class="exercise-intro">
+        <div class="ei-icon">✏️</div>
+        <div>
+          <h3>Bài Tập Kiểm Tra</h3>
+          <p>{{ exercises|length }} câu hỏi · Điểm đạt ≥ 60%</p>
+        </div>
+        <button class="btn-primary-sm" onclick="startExercise()">Bắt Đầu Làm Bài</button>
+      </div>
+      <div id="exercise-container">
+        {% for ex in exercises %}
+        <div class="exercise-card" id="ex-{{ ex.id }}" data-correct="{{ ex.correct_answer }}">
+          <div class="ex-header">
+            <span class="ex-num">Câu {{ loop.index }}</span>
+            <span class="ex-status" id="ex-status-{{ ex.id }}"></span>
+          </div>
+          <p class="ex-question">{{ ex.question }}</p>
+          <div class="ex-options">
+            {% for letter, text in [('A', ex.option_a), ('B', ex.option_b), ('C', ex.option_c), ('D', ex.option_d)] %}
+            {% if text %}
+            <button class="ex-opt" data-letter="{{ letter }}"
+                    onclick="selectAnswer({{ ex.id }}, '{{ letter }}', this)">
+              <span class="ex-opt-letter">{{ letter }}</span>
+              <span class="ex-opt-text">{{ text }}</span>
+            </button>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% if ex.explanation %}
+          <div class="ex-explanation hidden" id="ex-exp-{{ ex.id }}">
+            <span class="exp-icon">💡</span>
+            <div><strong>Giải thích:</strong><p>{{ ex.explanation }}</p></div>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="exercise-result hidden" id="exercise-result">
+          <div class="result-score" id="result-score"></div>
+          <div class="result-msg"  id="result-msg"></div>
+          <!-- AI feedback tổng quan sau mỗi lần nộp bài -->
+          <div id="exercise-ai-feedback" style="margin:14px auto 0;max-width:760px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:12px 14px;text-align:left;color:#3730a3;font-size:.92rem;line-height:1.55;"></div>
+          <!-- KPI nhanh: điểm bài hiện tại, độ chính xác khóa, tiến độ khóa,... -->
+          <div id="exercise-analytics" style="margin:12px auto 0;max-width:760px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;"></div>
+          <!-- AI mini theo từng câu sai -->
+          <div id="exercise-wrong-insights" style="margin:12px auto 0;max-width:760px;"></div>
+          <!-- Chart tiến bộ các lần làm bài gần nhất -->
+          <div id="exercise-progress-chart" style="margin:12px auto 0;max-width:760px;"></div>
+          <!-- Kế hoạch hành động 3 ngày do AI gợi ý -->
+          <div id="exercise-study-plan" style="margin:12px auto 0;max-width:760px;"></div>
+          <!-- Tiến độ tổng của kế hoạch gần nhất -->
+          <div id="exercise-study-plan-progress" style="margin:12px auto 0;max-width:760px;"></div>
+          <!-- Lịch sử các kế hoạch 3 ngày gần nhất -->
+          <div id="exercise-study-plan-history" style="margin:12px auto 0;max-width:760px;"></div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+            <button class="btn-outline-sm" onclick="retryExercise()">🔁 Làm lại</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Panel: Ghi chú ── -->
+    <div class="ltab-panel" id="ltab-notes">
+      <div class="notes-area">
+        <div class="notes-header">
+          <h3>📝 Ghi Chú Cá Nhân</h3>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="note-autosave"></span>
+            <button class="btn-primary-sm" onclick="saveNote()">💾 Lưu</button>
+          </div>
+        </div>
+        <textarea class="notes-textarea" id="lesson-note"
+          placeholder="Ghi lại những điều quan trọng từ bài học này...&#10;&#10;- Khái niệm cần nhớ&#10;- Câu hỏi cần hỏi&#10;- Ý tưởng thực tế"></textarea>
+        <div class="notes-tip">💡 Ghi chú được lưu tự động trên trình duyệt</div>
+      </div>
+    </div>
+
+    <!-- ── Panel: Thảo luận ── -->
+    <div class="ltab-panel" id="ltab-discuss">
+      <div class="empty-lesson-state">
+        <div class="els-icon">💬</div>
+        <h3>Tính năng sắp ra mắt</h3>
+        <p>Sớm thôi bạn sẽ có thể hỏi bài và thảo luận ngay trong bài học!</p>
+      </div>
+    </div>
+
+    <!-- ── Điều hướng bài học ── -->
+    <div class="lesson-nav">
+      {% set ns = namespace(prev_id=None, next_id=None, found=False) %}
+      {% for l in all_lessons %}
+        {% if ns.found and ns.next_id is none %}{% set ns.next_id = l.id %}{% endif %}
+        {% if l.id == lesson.id %}{% set ns.found = True %}{% endif %}
+        {% if not ns.found %}{% set ns.prev_id = l.id %}{% endif %}
+      {% endfor %}
+
+      {% if ns.prev_id %}
+      <a href="{{ url_for('xem_bai_hoc', lesson_id=ns.prev_id) }}" class="lesson-nav-btn">← Bài Trước</a>
+      {% else %}
+      <span class="lesson-nav-btn disabled">← Bài Trước</span>
+      {% endif %}
+
+      <button class="lesson-nav-btn complete-btn {% if lesson.id in completed_lessons %}is-done{% endif %}"
+              id="complete-btn" onclick="markComplete()">
+        {% if lesson.id in completed_lessons %}✅ Đã Hoàn Thành{% else %}☑️ Đánh Dấu Hoàn Thành{% endif %}
+      </button>
+
+      {% if ns.next_id %}
+      <a href="{{ url_for('xem_bai_hoc', lesson_id=ns.next_id) }}" class="lesson-nav-btn lesson-nav-next">
+        Bài Tiếp Theo →
+      </a>
+      {% else %}
+      <button class="lesson-nav-btn lesson-nav-next" onclick="finishCourse()">
+        🎓 Hoàn Thành Khóa Học
+      </button>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const LESSON_ID    = {{ lesson.id }};
+  const COURSE_ID    = {{ lesson.course_id }};
+  const IS_INSTRUCTOR = {{ 'true' if is_instructor else 'false' }};
+  const TOTAL_LESSONS = {{ all_lessons|length }};
+  const IS_DONE_INIT  = {{ 'true' if lesson.id in completed_lessons else 'false' }};
+
+  // Khởi tạo trạng thái hoàn thành
+  if (IS_DONE_INIT) {
+    document.getElementById('status-badge').textContent = '✅ Đã hoàn thành';
+    const numEl = document.getElementById(`ls-num-${LESSON_ID}`);
+    if (numEl) numEl.classList.add('done');
+  }
+</script>
+<script src="{{ url_for('static', filename='js/xem-bai-hoc.js') }}"></script>
+{% endblock %}

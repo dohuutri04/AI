@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tất Cả Khóa Học – EduConnect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/base.css">
+  <link rel="stylesheet" href="../static/css/responsive.css">
+  <link rel="stylesheet" href="../static/css/tat-ca-khoa-hoc.css">
+</head>
+<body>
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="trang-chu.html" class="logo"><span class="logo-icon">🎓</span><span class="logo-text">Edu<strong>Connect</strong></span></a>
+    <nav class="main-nav" id="main-nav">
+      <a href="trang-chu.html" class="nav-link">Trang Chủ</a>
+      <a href="tat-ca-khoa-hoc.html" class="nav-link active">Khóa Học</a>
+      <a href="gioi-thieu.html" class="nav-link">Giới Thiệu</a>
+      <a href="lien-he.html" class="nav-link">Liên Hệ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn-outline-sm" onclick="openModal('login-modal')">Đăng Nhập</button>
+      <button class="btn-primary-sm" onclick="openModal('register-modal')">Đăng Ký</button>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+<div class="page-header-courses">
+  <div class="container">
+    <h1>Tất Cả Khóa Học</h1>
+    <p>Khám phá 56 khóa học chất lượng cao từ các chuyên gia hàng đầu</p>
+  </div>
+</div>
+
+<div class="filter-overlay" id="filter-overlay" onclick="closeFilter()"></div>
+
+<section class="section">
+  <div class="container">
+    <div class="courses-toolbar">
+      <div class="toolbar-left">
+        <button class="filter-toggle" onclick="openFilter()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Bộ Lọc
+        </button>
+        <span class="result-count"><strong>56</strong> khóa học</span>
+      </div>
+      <div class="toolbar-right">
+        <span class="active-filter">📂 Lập Trình Web <a href="#" onclick="return false;">✕</a></span>
+      </div>
+    </div>
+
+    <div class="courses-layout">
+      <aside class="filter-sidebar" id="filter-sidebar">
+        <div class="filter-header-mobile"><h3>Bộ Lọc</h3><button onclick="closeFilter()">✕</button></div>
+        <form id="filter-form" onsubmit="return false;">
+          <div class="filter-section"><h4>🔍 Tìm Kiếm</h4><div class="filter-search"><input type="text" placeholder="Tên khóa học..."></div></div>
+          <div class="filter-section"><h4>📂 Danh Mục</h4><div class="filter-options"><label class="filter-opt"><input type="radio" checked><span>Tất cả</span></label><label class="filter-opt"><input type="radio"><span>Lập Trình Web</span></label><label class="filter-opt"><input type="radio"><span>SEO</span></label></div></div>
+          <div class="filter-section"><h4>📊 Cấp Độ</h4><div class="filter-options"><label class="filter-opt"><input type="radio" checked><span>Tất cả</span></label><label class="filter-opt"><input type="radio"><span>🟢 Cơ bản</span></label><label class="filter-opt"><input type="radio"><span>🟡 Trung cấp</span></label></div></div>
+          <button type="button" class="btn-primary full-width" onclick="showToast('Trang tĩnh: bộ lọc không truy vấn dữ liệu.', 'error')">Áp Dụng Bộ Lọc</button>
+        </form>
+      </aside>
+
+      <div class="courses-main">
+        <div class="courses-grid-kh">
+          <div class="course-card"><div class="course-card__img"><span>💻</span></div><div class="course-card__body"><div class="card-top-row"><span class="course-card__category">Lập Trình Web</span><span class="badge badge-beginner">Cơ bản</span></div><h3 class="course-card__title">Lập Trình Web Từ Zero Đến Hero</h3><p class="course-card__instructor">👨‍🏫 Nguyễn Văn An</p><div class="course-card__meta"><span class="course-card__rating">⭐ 4.8</span><span>🎬 120 bài</span><span>👥 2,340</span></div><p class="course-desc">Khóa học toàn diện từ HTML, CSS, JavaScript đến React và Node.js...</p><div class="course-card__footer"><div class="price-group"><span class="price-now">799,000₫</span><span class="price-old">1,200,000₫</span><span class="price-badge">-33%</span></div><button class="btn-card" onclick="showToast('Trang tĩnh: không xử lý đăng ký khóa học.', 'error')">Đăng Ký</button></div></div></div>
+          <div class="course-card"><div class="course-card__img"><span>📈</span></div><div class="course-card__body"><div class="card-top-row"><span class="course-card__category">SEO</span><span class="badge badge-intermediate">Trung cấp</span></div><h3 class="course-card__title">SEO Thực Chiến 2024</h3><p class="course-card__instructor">👨‍🏫 Trần Thị Bình</p><div class="course-card__meta"><span class="course-card__rating">⭐ 4.7</span><span>🎬 80 bài</span><span>👥 1,890</span></div><p class="course-desc">Học SEO từ cơ bản đến nâng cao, tối ưu website lên top Google...</p><div class="course-card__footer"><div class="price-group"><span class="price-now">599,000₫</span><span class="price-old">900,000₫</span><span class="price-badge">-33%</span></div><button class="btn-card" onclick="showToast('Trang tĩnh: không xử lý đăng ký khóa học.', 'error')">Đăng Ký</button></div></div></div>
+          <div class="course-card"><div class="course-card__img"><span>🎨</span></div><div class="course-card__body"><div class="card-top-row"><span class="course-card__category">Thiết Kế</span><span class="badge badge-beginner">Cơ bản</span></div><h3 class="course-card__title">Thiết Kế UI/UX Chuyên Nghiệp</h3><p class="course-card__instructor">👨‍🏫 Trần Thị Bình</p><div class="course-card__meta"><span class="course-card__rating">⭐ 4.7</span><span>🎬 110 bài</span><span>👥 980</span></div><p class="course-desc">Figma, Adobe XD và nguyên tắc thiết kế hiện đại...</p><div class="course-card__footer"><div class="price-group"><span class="price-now">749,000₫</span><span class="price-old">1,100,000₫</span><span class="price-badge">-32%</span></div><button class="btn-card" onclick="showToast('Trang tĩnh: không xử lý đăng ký khóa học.', 'error')">Đăng Ký</button></div></div></div>
+        </div>
+
+        <div class="pagination">
+          <span class="page-btn disabled">←</span>
+          <span class="page-btn active">1</span>
+          <a href="#" class="page-btn" onclick="return false;">2</a>
+          <a href="#" class="page-btn" onclick="return false;">3</a>
+          <span class="page-btn disabled" style="border:none;">…</span>
+          <a href="#" class="page-btn" onclick="return false;">6</a>
+          <a href="#" class="page-btn" onclick="return false;">→</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script src="../static/js/main.js"></script>
+<script>
+function openFilter(){document.getElementById('filter-sidebar').classList.add('open');document.getElementById('filter-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeFilter(){document.getElementById('filter-sidebar').classList.remove('open');document.getElementById('filter-overlay').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeFilter();});
+</script>
+</body>
+</html>
